@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Register - Chat App</title>
+    <link href="http://localhost:4000/styles/auth.css" rel="stylesheet">
+    <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
+
+</head>
+<body>
+    <script>
+        async function registerUser() {
+            const password = document.getElementById('register-password').value;
+            const repeatPassword = document.getElementById('register-confirm-password').value;
+            if (password != repeatPassword){
+                alert("Passwords do not match");
+                return;
+            }
+
+            const username = document.getElementById('register-username').value;
+            const email = document.getElementById('register-email').value;
+
+            console.log('eeeeee')
+            var res = await axios({
+                method: 'POST',
+                url: 'http://localhost:4000/api/register',
+                data: {
+                    username: username,
+                    email: email,
+                    password: password,
+                }
+            }).then(res => {
+        // alert("Account created successfully! You can now log in.");
+        window.location = "/login?acc=created";
+    })
+        .catch(err => {
+            if (err.response && err.response.status === 400) {
+                alert(err.response.data.error);
+            } else {
+                alert("An unexpected error occurred. Please try again.");
+            }
+            console.error(err);
+        });
+        }
+        
+    </script>
+    <div class="auth-container">
+        <div class="auth-header">
+            <h2>Register for Modern Chat App</h2>
+        </div>
+        <div class="auth-form">
+            <form>
+                <div class="form-group">
+                    <label for="register-username">Username</label>
+                    <input type="text" id="register-username" required>
+                </div>
+                <div class="form-group">
+                    <label for="register-email">Email</label>
+                    <input type="email" id="register-email" required>
+                </div>
+                <div class="form-group">
+                    <label for="register-password">Password</label>
+                    <input type="password" id="register-password" required>
+                </div>
+                <div class="form-group">
+                    <label for="register-confirm-password">Confirm Password</label>
+                    <input type="password" id="register-confirm-password" required>
+                </div>
+                <button type="button" class="auth-button" onclick="registerUser()">Register</button>
+            </form>
+            <div class="form-footer">
+                <p>Already have an account? <a href="login">Login here</a></p>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

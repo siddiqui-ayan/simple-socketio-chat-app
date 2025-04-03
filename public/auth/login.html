@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login - Modern Chat App</title>
+    <link href="http://localhost:4000/styles/auth.css" rel="stylesheet">
+    <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
+
+</head>
+<body>
+    <script>
+        document.addEventListener("DOMContentLoaded", function() {
+            const params = new URLSearchParams(window.location.search);
+            if (params.get("acc") === "created") {
+                alert("Account created successfully! You can now log in.");
+            }
+        });
+        async function checkUser(){
+            const username = document.getElementById('login-username').value
+			const password = document.getElementById('login-password').value
+				var res = await axios({
+					method: 'POST',
+					url: 'http://localhost:4000/api/login',
+					data:{
+						username: username,
+						password: password
+					},
+					headers: {
+						Authorization: undefined
+					}
+				}).then(res => {
+                    // console.log(res)
+            // localStorage.setItem("token", res.data.token);
+            localStorage.setItem("username", res.data.username);
+
+        window.location = "/chat"
+    }).catch(err=>{
+            if (err.response && err.response.status === 400) {
+                alert(err.response.data.error);
+            } else {
+                alert("An unexpected error occurred. Please try again.");
+            }
+            console.error(err);
+        });
+            
+    }
+        
+    </script>
+    <div class="auth-container">
+        <div class="auth-header">
+            <h2>Login to Modern Chat App</h2>
+        </div>
+        <div class="auth-form">
+            <form>
+                <div class="form-group">
+                    <label for="login-username">User</label>
+                    <input type="text" id="login-username" required>
+                </div>
+                <div class="form-group">
+                    <label for="login-password">Password</label>
+                    <input type="password" id="login-password" required>
+                </div>
+                <button type="button" class="auth-button" onclick="checkUser()">Login</button>
+            </form>
+            <div class="form-footer">
+                <p>Don't have an account? <a href="register">Register here</a></p>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

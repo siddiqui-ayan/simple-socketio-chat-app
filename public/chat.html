@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Modern Chat App</title>
+    <link href="http://localhost:4000/styles/chat.css" rel="stylesheet">
+</head>
+<body>
+    <div class="chat-container">
+        <div class="chat-header">
+            <h2>Modern Chat</h2>
+            <button id="clear">Clear Chat</button>
+        </div>
+        <div id="status"></div>
+        <div id="messages"></div>
+        <div class="input-area">
+            <input type="text" id="textarea" placeholder="Type a message...">
+            <button id="send">Send</button>
+        </div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.5.4/socket.io.min.js"></script>
+    <script>
+        (function() {
+            const getElement = id => document.getElementById(id);
+
+            const status = getElement("status");
+            const messages = getElement("messages");
+            const textarea = getElement("textarea");
+            const username = localStorage.getItem('username')
+            const sendBtn = getElement("send");
+            const clearBtn = getElement("clear");
+
+            const setStatus = s => {
+                status.textContent = s;
+                setTimeout(() => { status.textContent = ""; }, 3000);
+            };
+
+            const socket = io("http://127.0.0.1:4000");
+
+            if (socket) {
+                console.log("Connected to socket...");
+
+                socket.on("output", data => {
+                    if (!Array.isArray(data)) return;
+                    
+                    if (messages.childElementCount === 0) {
+                        messages.innerHTML = "";
+                    }
+
+                    data.forEach(msg => addMessage(msg.name, msg.message));
+                });
+
+                socket.on("status", data => {
+                    setStatus(typeof data === "object" ? data.message : data);
+                    if (data.clear) {
+                        textarea.value = "";
+                    }
+                });
+
+                sendBtn.addEventListener("click", sendMessage);
+                textarea.addEventListener("keydown", event => {
+                    if (event.key === "Enter" && !event.shiftKey) {
+                        event.preventDefault();
+                        sendMessage();
+                    }
+                });
+
+                clearBtn.addEventListener("click", () => socket.emit("clear"));
+                socket.on("cleared", () => messages.innerHTML = "");
+
+                function sendMessage() {
+                    const name = username.trim();
+                    const message = textarea.value.trim();
+                    if (!name || !message) {
+                        setStatus("Please enter your name and message!");
+                        return;
+                    }
+                    socket.emit("input", { name, message });
+                    textarea.value = "";
+                }
+
+                function addMessage(name, message) {
+                    const div = document.createElement("div");
+                    div.classList.add("message");
+                    div.classList.add(name === username.trim() ? "user" : "other");
+                    div.textContent = `${name}: ${message}`;
+                    messages.appendChild(div);
+                    messages.scrollTop = messages.scrollHeight;
+                }
+            }
+        })();
+    </script>
+</body>
+</html>
